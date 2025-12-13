@@ -21,7 +21,7 @@ spec:
     spec:
       containers:
       - name: order-service
-        image: order-service:latest
+        image: ${ORDER_SERVICE_IMAGE}
         ports:
         - containerPort: 5001
         resources:

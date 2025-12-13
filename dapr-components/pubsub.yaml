@@ -7,7 +7,7 @@ spec:
   version: v1
   metadata:
   - name: region
-    value: "us-east-1"
+    value: "${AWS_REGION}"
   - name: accessKey
     secretKeyRef:
       name: aws-secret

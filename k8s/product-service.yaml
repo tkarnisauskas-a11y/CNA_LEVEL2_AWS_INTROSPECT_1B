@@ -21,7 +21,7 @@ spec:
     spec:
       containers:
       - name: product-service
-        image: product-service:latest
+        image: ${PRODUCT_SERVICE_IMAGE}
         ports:
         - containerPort: 5000
         resources:
