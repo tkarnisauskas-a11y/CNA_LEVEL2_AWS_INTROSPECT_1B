@@ -1,0 +1,25 @@
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: product-pubsub
+spec:
+  type: pubsub.aws.snssqs
+  version: v1
+  metadata:
+  - name: region
+    value: "us-east-1"
+  - name: accessKey
+    secretKeyRef:
+      name: aws-secret
+      key: AWS_ACCESS_KEY_ID
+  - name: secretKey
+    secretKeyRef:
+      name: aws-secret
+      key: AWS_SECRET_ACCESS_KEY
+  - name: sessionToken
+    secretKeyRef:
+      name: aws-secret
+      key: AWS_SESSION_TOKEN
+scopes:
+- product-service
+- order-service
