@@ -37,6 +37,7 @@ def create_order():
             return jsonify({'error': 'Product not found'}), 404
         product = response.json()
     except Exception as e:
+        print(f"Error calling ProductService: {e}")
         return jsonify({'error': 'Failed to get product info'}), 500
     
     order = {
@@ -52,6 +53,14 @@ def create_order():
     orders.append(order)
     save_orders(orders)
     
+    # Publish order event
+    webhook_url = os.getenv('ORDER_WEBHOOK_URL')
+    if webhook_url:
+        try:
+            requests.post(webhook_url, json=order)
+        except Exception as e:
+            print(f"Failed to publish order event: {e}")
+    
     return jsonify(order), 201
 
 @app.route('/orders', methods=['GET'])
@@ -60,17 +69,24 @@ def get_orders():
 
 @app.route('/dapr/subscribe', methods=['GET'])
 def subscribe():
-    subscriptions = [{
-        'pubsubname': 'product-pubsub',
-        'topic': 'product-created',
-        'route': '/product-created'
-    }]
-    return jsonify(subscriptions)
+    return jsonify([
+        {
+            "pubsubname": "product-pubsub",
+            "topic": "product-created",
+            "route": "/webhooks/product"
+        }
+    ])
 
-@app.route('/product-created', methods=['POST'])
-def product_created_handler():
+@app.route('/webhooks/product', methods=['POST'])
+def product_webhook():
     data = request.json
-    print(f"Product created event received: {data}")
+    print(f"Product event received: {data}")
+    return jsonify({'status': 'ok'})
+
+@app.route('/webhooks/order', methods=['POST'])
+def order_webhook():
+    data = request.json
+    print(f"Order event received: {data}")
     return jsonify({'status': 'ok'})
 
 if __name__ == '__main__':

@@ -9,6 +9,7 @@ metadata:
     karpenter.sh/discovery: introspect-1b-cluster
 
 iam:
+  serviceRoleARN: arn:aws:iam::621262609834:role/eksClusterServiceRole
   withOIDC: true
   serviceAccounts:
     - metadata:
@@ -24,6 +25,8 @@ managedNodeGroups:
     maxSize: 5
     instanceType: t3.small
     privateNetworking: true
+    iam:
+      instanceRoleARN: arn:aws:iam::621262609834:role/NodeInstanceRole
 
 addons:
   - name: vpc-cni 
