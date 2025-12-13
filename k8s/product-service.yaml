@@ -17,13 +17,19 @@ spec:
         dapr.io/enabled: "true"
         dapr.io/app-id: "product-service"
         dapr.io/app-port: "5000"
-        dapr.io/config: "tracing"
+        dapr.io/config: "dapr-config"
+        dapr.io/enable-api-logging: "true"
     spec:
       containers:
       - name: product-service
         image: ${PRODUCT_SERVICE_IMAGE}
         ports:
         - containerPort: 5000
+        env:
+        - name: ORDER_PUBSUB_COMPONENT
+          value: "order-pubsub"
+        - name: TOPIC_NAME
+          value: "orders"
         resources:
           requests:
             memory: "128Mi"

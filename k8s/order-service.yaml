@@ -17,7 +17,7 @@ spec:
         dapr.io/enabled: "true"
         dapr.io/app-id: "order-service"
         dapr.io/app-port: "5001"
-        dapr.io/config: "tracing"
+        dapr.io/config: "dapr-config"
     spec:
       containers:
       - name: order-service
@@ -31,6 +31,13 @@ spec:
           limits:
             memory: "256Mi"
             cpu: "200m"
+        env:
+        - name: PRODUCT_SERVICE_URL
+          value: "http://product-service"
+        - name: ORDER_PUBSUB_COMPONENT
+          value: "order-pubsub"
+        - name: TOPIC_NAME
+          value: "orders"
         volumeMounts:
         - name: data-volume
           mountPath: /data

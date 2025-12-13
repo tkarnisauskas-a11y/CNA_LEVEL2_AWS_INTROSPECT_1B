@@ -13,66 +13,94 @@
 aws configure
 ```
 
-2. Create the EKS cluster:
+2. Navigate to Infra directory:
+```bash
+cd Infra
+```
+
+3. Create the EKS cluster (eksctl will auto-create IAM roles):
 ```bash
 eksctl create cluster -f cluster-config.yaml
 ```
 
-3. Verify cluster context and nodes (created by managedNodeGroups):
+4. Update kubeconfig and verify cluster:
 ```bash
+aws eks update-kubeconfig --region us-east-1 --name introspect-1b-cluster
 kubectl config current-context
 kubectl get nodes
 ```
 
-## Dapr Configuration
-
-1. Find your EKS cluster security group ID:
+5. If you saw the IRSA warning, update the vpc-cni addon:
 ```bash
-aws ec2 describe-security-groups --filters "Name=group-name,Values=*introspect-1b-cluster*" --query "SecurityGroups[*].GroupId" --output text
+eksctl update addon --name vpc-cni --cluster introspect-1b-cluster --region us-east-1
 ```
 
-2. Update security group for Dapr sidecar communication (replace [your_security_group] with the ID from step 4):
-```bash
-aws ec2 authorize-security-group-ingress --region us-east-1 \
---group-id [your_security_group] \
---protocol tcp \
---port 4000 \
---source-group [your_security_group]
+## Troubleshooting
+
+### IRSA/vpc-cni Warning
+
+If you see this warning during cluster creation:
+```
+IRSA config is set for "vpc-cni" addon, but since OIDC is disabled on the cluster, eksctl cannot configure the requested permissions
 ```
 
-3. Verify cluster exists and is running:
+**Solution:** Update the vpc-cni addon after cluster creation:
 ```bash
-aws eks describe-cluster --region us-east-1 --name introspect-1b-cluster
+eksctl update addon --name vpc-cni --cluster introspect-1b-cluster --region us-east-1
 ```
 
-4. If cluster exists, update kubeconfig:
+### If Nodes Are Not Created
+
+If `kubectl get nodes` shows no nodes, the nodegroup creation likely failed due to insufficient permissions.
+
+**Required Permission Fix:**
+Ensure your IAM user/group has `"ec2:*"` permission. In AWS Console:
+1. Go to IAM → User groups → [Your Group]
+2. Edit the attached policy
+3. Add `"ec2:*"` to the Action list
+4. Save the policy
+
+5. After fixing permissions, create nodegroup manually:
+
+**Linux/macOS:**
 ```bash
-aws eks update-kubeconfig --region us-east-1 --name introspect-1b-cluster
+eksctl create nodegroup \
+  --cluster introspect-1b-cluster \
+  --region us-east-1 \
+  --name mng-od-2vcpu-2gb \
+  --node-type t3.small \
+  --nodes 2 \
+  --nodes-min 1 \
+  --nodes-max 5 \
+  --node-private-networking
 ```
 
-5. Install Dapr on the cluster:
-```bash
-dapr init -k
+**Windows PowerShell:**
+```powershell
+eksctl create nodegroup `
+  --cluster introspect-1b-cluster `
+  --region us-east-1 `
+  --name mng-od-2vcpu-2gb `
+  --node-type t3.small `
+  --nodes 2 `
+  --nodes-min 1 `
+  --nodes-max 5 `
+  --node-private-networking
 ```
 
-**What `dapr init -k` does:**
-- `-k` flag specifies Kubernetes mode (vs self-hosted mode)
-- Downloads and installs Dapr control plane components:
-  - **dapr-operator**: Manages Dapr components and configurations
-  - **dapr-sidecar-injector**: Automatically injects Dapr sidecar containers
-  - **dapr-placement**: Manages actor placement across cluster nodes
-  - **dapr-sentry**: Provides certificate authority for mTLS between services
-- Creates `dapr-system` namespace
-- Installs Custom Resource Definitions (CRDs) for Dapr components
-- Sets up RBAC permissions
-- Configures default Dapr configuration
+## Dapr Installation
 
-6. Verify Dapr installation:
+6. Install Dapr on the cluster (development mode):
+```bash
+dapr init -k --dev
+```
+
+7. Verify Dapr installation:
 ```bash
 dapr status -k
 ```
 
-7. View Dapr pods running in the cluster:
+8. View Dapr pods running in the cluster:
 ```bash
 kubectl get pods -n dapr-system
 ```

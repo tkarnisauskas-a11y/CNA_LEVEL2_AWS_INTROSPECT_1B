@@ -11,7 +11,7 @@ All user-required credentials and configuration values have been centralized in 
 | `ECR_REGISTRY` | ECR registry URL | `build.sh`, `build.ps1` |
 | `AWS_ACCESS_KEY_ID_B64` | Base64 encoded AWS access key | `k8s/aws-secret.yaml` |
 | `AWS_SECRET_ACCESS_KEY_B64` | Base64 encoded AWS secret key | `k8s/aws-secret.yaml` |
-| `AWS_SESSION_TOKEN_B64` | Base64 encoded AWS session token | `k8s/aws-secret.yaml` |
+| `AWS_SESSION_TOKEN_B64` | Base64 encoded AWS session token (only for temporary credentials) | `k8s/aws-secret.yaml` |
 | `PRODUCT_SERVICE_IMAGE` | Product service container image | `k8s/product-service.yaml`, `build.sh`, `build.ps1` |
 | `ORDER_SERVICE_IMAGE` | Order service container image | `k8s/order-service.yaml`, `build.sh`, `build.ps1` |
 
@@ -23,14 +23,25 @@ All user-required credentials and configuration values have been centralized in 
    # Edit config.env with your values
    ```
 
-2. **Generate base64 encoded credentials**:
+2. **Get AWS credentials**:
    ```bash
-   echo -n "your-access-key" | base64
-   echo -n "your-secret-key" | base64
-   echo -n "your-session-token" | base64
+   # Get temporary credentials (includes session token)
+   aws sts get-session-token
+   
+   # Or get current credentials info
+   aws configure list
+   aws sts get-caller-identity
    ```
 
-3. **Update config.env** with your actual values:
+3. **Generate base64 encoded credentials**:
+   ```bash
+   # From AWS STS output or your credentials
+   echo -n "AKIA..." | base64  # AccessKeyId
+   echo -n "your-secret-key" | base64  # SecretAccessKey
+   echo -n "session-token" | base64  # SessionToken (if using temporary credentials)
+   ```
+
+4. **Update config.env** with your actual values:
    - Replace `<your-account-id>` with your AWS account ID
    - Replace `<base64-encoded-*>` with your base64 encoded credentials
    - Update `AWS_REGION` if different from us-east-1
