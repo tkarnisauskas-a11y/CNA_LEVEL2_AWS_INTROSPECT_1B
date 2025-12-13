@@ -66,11 +66,23 @@ This project demonstrates containerized microservices on Amazon EKS with Dapr si
 
 ## Configuration
 
-Update `k8s/aws-secret.yaml` with base64-encoded AWS credentials:
+**IMPORTANT**: Before running any scripts, update `config.env` with your AWS credentials and configuration:
+
+1. Edit `config.env` and replace placeholder values:
+   - `AWS_ACCOUNT_ID`: Your AWS account ID
+   - `AWS_REGION`: Your preferred AWS region
+   - `AWS_ACCESS_KEY_ID_B64`: Base64 encoded access key
+   - `AWS_SECRET_ACCESS_KEY_B64`: Base64 encoded secret key
+   - `AWS_SESSION_TOKEN_B64`: Base64 encoded session token
+
+2. Generate base64 credentials:
 ```bash
 echo -n "your-access-key" | base64
 echo -n "your-secret-key" | base64
+echo -n "your-session-token" | base64
 ```
+
+See `CONFIG_REFERENCE.md` for detailed configuration information.
 
 ## Monitoring
 
