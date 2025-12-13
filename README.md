@@ -1,17 +1,17 @@
 # EKS Microservices with Dapr
 
-This project demonstrates containerized microservices on Amazon EKS with Dapr sidecars for pub/sub messaging using AWS SNS/SQS.
+This project demonstrates containerized microservices on Amazon EKS with Dapr sidecars for pub/sub messaging using AWS SNS.
 
 ## Overview
 
-This sample shows how to create a publisher microservice and a subscriber microservice, leveraging Dapr's pub/sub API. This sample uses AWS SNS/SQS as the message broker.
+This sample shows how to create a publisher microservice and a subscriber microservice, leveraging Dapr's pub/sub API. This sample uses AWS SNS as the message broker.
 
 ## Architecture
 
 - **ProductService (Publisher)**: Creates products, stores in JSON files, publishes events to `product-events` topic
 - **OrderService (Subscriber)**: Creates orders, subscribes to `product-events` topic, calls ProductService via Dapr service invocation
 - **Dapr**: Handles service-to-service communication and pub/sub messaging with automatic retries and dead letter queues
-- **AWS SNS/SQS**: Message broker for product events with built-in durability and scalability
+- **AWS SNS**: Message broker for publishing product events with built-in durability and scalability
 - **Kafka**: Message broker for order events (OrderService to OrderService)
 
 ## Dapr Concepts Used
@@ -191,7 +191,7 @@ kubectl get subscriptions
 
 ## Expected Behavior
 
-1. **Create a product** via ProductService → Product event published to SNS/SQS
+1. **Create a product** via ProductService → Product event published to SNS
 2. **OrderService receives** the product event automatically via Dapr subscription
 3. **Create an order** via OrderService → Validates product exists via service invocation
 4. **View logs** to see the pub/sub and service invocation flow
