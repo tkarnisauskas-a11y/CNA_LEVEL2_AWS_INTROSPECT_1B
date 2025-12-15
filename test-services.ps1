@@ -58,7 +58,7 @@ try {
 # Test 4: Verify pub/sub flow by checking logs
 Write-Host "4. Checking if product events are being processed..."
 try {
-    $logs = kubectl logs -l app=order-service -c order-service --tail=20 2>$null
+    $logs = kubectl logs -l app=order-service -c order-service --tail=100 2>$null
     if ($logs -match "\[EVENT RECEIVED\]") {
         Write-Host "✓ OrderService is processing product events:"
         # Extract and display received product information
