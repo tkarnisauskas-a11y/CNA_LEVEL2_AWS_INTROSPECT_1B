@@ -3,7 +3,7 @@ kind: Component
 metadata:
   name: product-pubsub
 spec:
-  type: pubsub.aws.snssqs
+  type: pubsub.aws.sns.sqs
   version: v1
   metadata:
   - name: region
@@ -20,6 +20,8 @@ spec:
     secretKeyRef:
       name: aws-secret
       key: AWS_SESSION_TOKEN
+  - name: topicArn
+    value: "arn:aws:sns:${AWS_REGION}:${AWS_ACCOUNT_ID}:product-new"
 scopes:
 - product-service
 - order-service

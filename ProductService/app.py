@@ -9,7 +9,7 @@ app = Flask(__name__)
 PRODUCTS_FILE = '/data/products.json'
 DAPR_HTTP_PORT = os.getenv('DAPR_HTTP_PORT', '3500')
 PUBSUB_NAME = 'product-pubsub'
-TOPIC_NAME = 'product-created'
+TOPIC_NAME = 'product.new'
 
 def load_products():
     if os.path.exists(PRODUCTS_FILE):
@@ -44,7 +44,8 @@ def create_product():
     # Publish event via Dapr
     publish_url = f'http://localhost:{DAPR_HTTP_PORT}/v1.0/publish/{PUBSUB_NAME}/{TOPIC_NAME}'
     try:
-        requests.post(publish_url, json=product)
+        response = requests.post(publish_url, json=product)
+        print(f"Published product event to {TOPIC_NAME}: {response.status_code}")
     except Exception as e:
         print(f"Failed to publish event: {e}")
     

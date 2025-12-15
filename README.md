@@ -8,17 +8,16 @@ This sample shows how to create a publisher microservice and a subscriber micros
 
 ## Architecture
 
-- **ProductService (Publisher)**: Creates products, stores in JSON files, publishes events to `product-events` topic
-- **OrderService (Subscriber)**: Creates orders, subscribes to `product-events` topic, calls ProductService via Dapr service invocation
-- **Dapr**: Handles service-to-service communication and pub/sub messaging with automatic retries and dead letter queues
-- **AWS SNS**: Message broker for publishing product events with built-in durability and scalability
-- **Kafka**: Message broker for order events (OrderService to OrderService)
+- **ProductService (Publisher)**: Creates products, stores in JSON files, publishes events to `product.new` topic
+- **OrderService (Subscriber)**: Minimal event handler that subscribes to `product.new` topic via declarative subscription
+- **Dapr**: Handles pub/sub messaging with automatic retries and dead letter queues
+- **AWS SNS/SQS**: Message broker for publishing product events with built-in durability and scalability
 
 ## Dapr Concepts Used
 
 - **Pub/Sub API**: For asynchronous messaging between services
-- **Service Invocation API**: For synchronous service-to-service calls
 - **Components**: AWS SNS/SQS pub/sub component configuration
+- **Declarative Subscriptions**: Kubernetes-native subscription configuration
 - **Sidecars**: Dapr runtime injected alongside each microservice
 
 ## Prerequisites
@@ -26,6 +25,7 @@ This sample shows how to create a publisher microservice and a subscriber micros
 - [AWS CLI](https://aws.amazon.com/cli/) configured with appropriate permissions
 - [kubectl](https://kubernetes.io/docs/tasks/tools/) configured for EKS cluster
 - [Docker](https://docs.docker.com/get-docker/) installed and running
+  - **Windows**: Ensure Docker Desktop is started before running build scripts
 - [Dapr CLI](https://docs.dapr.io/getting-started/install-dapr-cli/) installed
 - [eksctl](https://eksctl.io/installation/) for EKS cluster management
 
@@ -34,6 +34,12 @@ This sample shows how to create a publisher microservice and a subscriber micros
 Before deploying the microservices, set up the EKS cluster:
 
 See `Infra/README.md` for EKS cluster setup instructions.
+
+## Configuration
+
+**IMPORTANT**: Before running any scripts, update `config.env` with your AWS credentials and configuration.
+
+See `CONFIG_REFERENCE.md` for detailed setup instructions and credential configuration.
 
 ## Quick Start
 
@@ -79,80 +85,57 @@ See `Infra/README.md` for EKS cluster setup instructions.
 The ProductService publishes messages using Dapr's pub/sub API:
 
 ```python
-# Publish to 'product-events' topic
+# Publish to 'product.new' topic
 response = requests.post(
-    f"http://localhost:3500/v1.0/publish/pubsub/product-events",
+    f"http://localhost:3500/v1.0/publish/product-pubsub/product.new",
     json=product_data
 )
 ```
 
 ### Subscribing to Messages (OrderService)
 
-The OrderService subscribes to messages by:
+The OrderService uses **declarative subscriptions** via Kubernetes YAML:
 
-1. **Declaring subscriptions** via `/dapr/subscribe` endpoint:
-```python
-@app.route('/dapr/subscribe', methods=['GET'])
-def subscribe():
-    return [{
-        "pubsubname": "pubsub",
-        "topic": "product-events",
-        "route": "/product-events"
-    }]
+```yaml
+apiVersion: dapr.io/v2alpha1
+kind: Subscription
+metadata:
+  name: order-subscription
+spec:
+  pubsubname: product-pubsub
+  topic: product.new
+  routes:
+    default: /orders/handle
+  scopes:
+  - order-service
 ```
 
-2. **Handling incoming messages** via the subscription route:
+The app handles incoming CloudEvents:
 ```python
-@app.route('/product-events', methods=['POST'])
-def handle_product_event():
-    event_data = request.json
-    # Process the product event
+@app.route('/orders/handle', methods=['POST'])
+def handle_order_event():
+    body = request.json
+    event_id = body.get('id')
+    event_type = body.get('type')
+    data = body.get('data')
+    # Process business logic
     return '', 200
 ```
 
-### Service-to-Service Communication
 
-Services communicate via Dapr's service invocation API:
-
-```python
-# OrderService calling ProductService
-response = requests.get(
-    f"http://localhost:3500/v1.0/invoke/product-service/method/products/{product_id}"
-)
-```
 
 ## API Endpoints
 
-### ProductService (Port 8080)
-- `POST /products` - Create product and publish event
+### ProductService (Port 5000)
+- `POST /products` - Create product and publish event to `product.new` topic
 - `GET /products` - List all products
 - `GET /products/{id}` - Get product by ID
+- `GET /health` - Health check
 
 ### OrderService (Port 8081)
-- `POST /orders` - Create order (validates product via service invocation)
-- `GET /orders` - List all orders
-- `POST /product-events` - Handle product events (Dapr subscription)
-- `GET /dapr/subscribe` - Dapr subscription configuration
+- `POST /orders/handle` - Handle product events (Dapr subscription endpoint)
 
-## Configuration
-
-**IMPORTANT**: Before running any scripts, update `config.env` with your AWS credentials and configuration:
-
-1. Edit `config.env` and replace placeholder values:
-   - `AWS_ACCOUNT_ID`: Your AWS account ID
-   - `AWS_REGION`: Your preferred AWS region
-   - `AWS_ACCESS_KEY_ID_B64`: Base64 encoded access key
-   - `AWS_SECRET_ACCESS_KEY_B64`: Base64 encoded secret key
-   - `AWS_SESSION_TOKEN_B64`: Base64 encoded session token
-
-2. Generate base64 credentials:
-```bash
-echo -n "your-access-key" | base64
-echo -n "your-secret-key" | base64
-echo -n "your-session-token" | base64
-```
-
-See `CONFIG_REFERENCE.md` for detailed configuration information.
+**Note**: OrderService is now a minimal event handler focused solely on processing product events.
 
 ## Monitoring and Debugging
 
@@ -187,14 +170,17 @@ kubectl describe component pubsub
 ```bash
 # Check if subscriptions are registered
 kubectl get subscriptions
+
+# Describe subscription details
+kubectl describe subscription order-subscription
 ```
 
 ## Expected Behavior
 
-1. **Create a product** via ProductService → Product event published to SNS
-2. **OrderService receives** the product event automatically via Dapr subscription
-3. **Create an order** via OrderService → Validates product exists via service invocation
-4. **View logs** to see the pub/sub and service invocation flow
+1. **Create a product** via ProductService → Product event published to `product.new` topic on AWS SNS
+2. **OrderService receives** the product event automatically via declarative Dapr subscription
+3. **OrderService processes** the event and logs the CloudEvent data (id, type, data)
+4. **View logs** to see the pub/sub message flow and event processing
 
 ## Cleanup
 

@@ -18,11 +18,11 @@ iam:
         - arn:aws:iam::aws:policy/AdministratorAccess
 
 managedNodeGroups:
-  - name: mng-od-2vcpu-2gb
+  - name: mng-od-4vcpu-4gb
     desiredCapacity: 2
     minSize: 1
     maxSize: 5
-    instanceType: t3.small
+    instanceType: t3.medium
     privateNetworking: true
 
 addons:

@@ -35,6 +35,28 @@ kubectl get nodes
 eksctl update addon --name vpc-cni --cluster introspect-1b-cluster --region us-east-1
 ```
 
+6. Configure default storage class (required for Dapr scheduler):
+```bash
+kubectl patch storageclass gp2 -p "{\"metadata\": {\"annotations\":{\"storageclass.kubernetes.io/is-default-class\":\"true\"}}}"
+```
+
+## Dapr Installation
+
+7. Install Dapr on the cluster (development mode):
+```bash
+dapr init -k --dev
+```
+
+8. Verify Dapr installation:
+```bash
+dapr status -k
+```
+
+9. View Dapr pods running in the cluster:
+```bash
+kubectl get pods -n dapr-system
+```
+
 ## Troubleshooting
 
 ### IRSA/vpc-cni Warning
@@ -67,8 +89,8 @@ Ensure your IAM user/group has `"ec2:*"` permission. In AWS Console:
 eksctl create nodegroup \
   --cluster introspect-1b-cluster \
   --region us-east-1 \
-  --name mng-od-2vcpu-2gb \
-  --node-type t3.small \
+  --name mng-od-4vcpu-4gb \
+  --node-type t3.medium \
   --nodes 2 \
   --nodes-min 1 \
   --nodes-max 5 \
@@ -80,27 +102,12 @@ eksctl create nodegroup \
 eksctl create nodegroup `
   --cluster introspect-1b-cluster `
   --region us-east-1 `
-  --name mng-od-2vcpu-2gb `
-  --node-type t3.small `
+  --name mng-od-4vcpu-4gb `
+  --node-type t3.medium `
   --nodes 2 `
   --nodes-min 1 `
   --nodes-max 5 `
   --node-private-networking
 ```
 
-## Dapr Installation
-
-6. Install Dapr on the cluster (development mode):
-```bash
-dapr init -k --dev
-```
-
-7. Verify Dapr installation:
-```bash
-dapr status -k
-```
-
-8. View Dapr pods running in the cluster:
-```bash
-kubectl get pods -n dapr-system
-```
+**Note:** Configuring the storage class before Dapr installation prevents dapr-scheduler-server pods from being in pending state.
