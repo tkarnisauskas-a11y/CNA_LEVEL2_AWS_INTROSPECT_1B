@@ -3,7 +3,7 @@ kind: Component
 metadata:
   name: product-pubsub
 spec:
-  type: pubsub.aws.sns.sqs
+  type: pubsub.aws.snssqs
   version: v1
   metadata:
   - name: region

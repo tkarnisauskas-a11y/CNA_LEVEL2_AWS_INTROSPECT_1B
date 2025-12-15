@@ -13,7 +13,7 @@ Write-Host "Configuring default storage class..." -ForegroundColor Green
 kubectl patch storageclass gp2 -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
 
 Write-Host "Installing Dapr..." -ForegroundColor Green
-dapr init -k --dev
+dapr init -k
 
 Write-Host "Verifying Dapr installation..." -ForegroundColor Green
 kubectl get pods -n dapr-system

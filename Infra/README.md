@@ -42,9 +42,9 @@ kubectl patch storageclass gp2 -p "{\"metadata\": {\"annotations\":{\"storagecla
 
 ## Dapr Installation
 
-7. Install Dapr on the cluster (development mode):
+7. Install Dapr on the cluster:
 ```bash
-dapr init -k --dev
+dapr init -k
 ```
 
 8. Verify Dapr installation:
