@@ -36,8 +36,13 @@ eksctl update addon --name vpc-cni --cluster introspect-1b-cluster --region us-e
 ```
 
 6. Configure default storage class (required for Dapr scheduler):
+**Bash/Linux/macOS:**
 ```bash
 kubectl patch storageclass gp2 -p "{\"metadata\": {\"annotations\":{\"storageclass.kubernetes.io/is-default-class\":\"true\"}}}"
+```
+**PowerShell:**
+```powershell
+kubectl patch storageclass gp2 -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
 ```
 
 ## Dapr Installation
