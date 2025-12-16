@@ -26,6 +26,11 @@ managedNodeGroups:
     privateNetworking: true
 
 addons:
+  - name: amazon-cloudwatch-observability
+    version: latest
+    attachPolicyARNs:
+      - arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy
+      - arn:aws:iam::aws:policy/AWSXRayWriteOnlyAccess
   - name: vpc-cni 
     attachPolicyARNs:
       - arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy
