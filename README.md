@@ -39,5 +39,5 @@ The `Deliverables/` folder contains all project outputs, documentation, and arti
 - **Screenshots**: Visual captures of key stages such as cluster setup, deployment status, service testing, and monitoring dashboards.
 - **Architecture Diagram**: A detailed diagram illustrating the system architecture, including microservices, Dapr components, AWS services, and data flow.
 
-**Highlighted: Architecture Diagram**  
-The architecture diagram provides a comprehensive visual representation of the entire system. It shows the interaction between ProductService and OrderService, the role of Dapr sidecars, the AWS SNS/SQS messaging infrastructure, and the Kubernetes orchestration on EKS. This diagram is essential for understanding the high-level design and can be found at `Deliverables/architecture-diagram.png` (or similar filename).
+    > The architecture diagram provides a comprehensive visual representation of the entire system. It shows the interaction between ProductService and OrderService, the role of Dapr sidecars, the AWS SNS/SQS messaging infrastructure, and the Kubernetes orchestration on EKS. 
+    This diagram is essential for understanding the high-level design and can be found at `Deliverables/Architecture-Diagram.png`.
