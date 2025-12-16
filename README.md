@@ -37,6 +37,7 @@ The `Deliverables/` folder contains all project outputs, documentation, and arti
 
 - **Logs**: Application logs, Dapr sidecar logs, and deployment logs capturing the runtime behavior and event processing.
 - **Screenshots**: Visual captures of key stages such as cluster setup, deployment status, service testing, and monitoring dashboards.
+- **ECR Container Images**: Saved Docker images for deployment (order-service.tar and product-service.tar).
 - **Architecture Diagram**: A detailed diagram illustrating the system architecture, including microservices, Dapr components, AWS services, and data flow.
 
     > The architecture diagram provides a comprehensive visual representation of the entire system. It shows the interaction between ProductService and OrderService, the role of Dapr sidecars, the AWS SNS/SQS messaging infrastructure, and the Kubernetes orchestration on EKS. 
