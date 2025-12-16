@@ -2,17 +2,6 @@
 
 This project demonstrates containerized microservices on Amazon EKS with Dapr sidecars for pub/sub messaging using AWS SNS.
 
-## Overview
-
-This sample shows how to create a publisher microservice and a subscriber microservice, leveraging Dapr's pub/sub API. This sample uses AWS SNS as the message broker.
-
-## Architecture
-
-- **ProductService (Publisher)**: Creates products, stores in JSON files, publishes events to `product.new` topic
-- **OrderService (Subscriber)**: Minimal event handler that subscribes to `product.new` topic via declarative subscription
-- **Dapr**: Handles pub/sub messaging with automatic retries and dead letter queues
-- **AWS SNS/SQS**: Message broker for publishing product events with built-in durability and scalability
-
 ## Dapr Concepts Used
 
 - **Pub/Sub API**: For asynchronous messaging between services
